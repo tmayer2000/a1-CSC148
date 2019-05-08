@@ -40,10 +40,10 @@ class CallHistory:
         """
         month = call.time.month
         year = call.time.year
-        if (month, year) in self.incoming_calls:
-            self.incoming_calls[(month, year)] += [call]
+        if (month, year) in self.outgoing_calls:
+            self.outgoing_calls[(month, year)].append(call)
         else:
-            self.incoming_calls[(month, year)] = [call]
+            self.outgoing_calls[(month, year)] = [call]
 
 
     def register_incoming_call(self, call: Call) -> None:
@@ -51,10 +51,10 @@ class CallHistory:
         """
         month = call.time.month
         year = call.time.year
-        if (month, year) in self.outgoing_calls:
-            self.outgoing_calls[(month, year)] += [call]
+        if (month, year) in self.incoming_calls:
+            self.incoming_calls[(month, year)] += [call]
         else:
-            self.outgoing_calls[(month, year)] = [call]
+            self.incoming_calls[(month, year)] = [call]
 
     # ----------------------------------------------------------
     # NOTE: You do not need to understand the implementation of
