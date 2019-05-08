@@ -107,17 +107,16 @@ class TermContract(Contract):
     cur_year:
         current year of the contract
     """
-    start: datetime.datetime
-    end: datetime.datetime
+    start: datetime.date
+    end: datetime.date
     bill: Optional[Bill]
     cur_month: datetime.datetime.month
     cur_year: datetime.datetime.year
 
 
-    def __init__(self, start: datetime.datetime, end: datetime.datetime)->None:
-        self.start = start
+    def __init__(self, start: datetime.date, end: datetime.datetime)->None:
+        Contract.__init__(self, start)
         self.end = end
-        self.bill = Bill()
         self.cur_month = start.month
         self.cur_year = start.year
 
@@ -125,26 +124,28 @@ class TermContract(Contract):
         if month == self.start.month and year == self.start.year:
             bill.set_rates('TERM', TERM_MINS_COST)
             bill.add_fixed_cost(TERM_DEPOSIT + TERM_MONTHLY_FEE)
-            bill.add_free_minutes(TERM_MINS)
         else:
             bill.set_rates('TERM', TERM_MINS_COST)
             bill.add_fixed_cost(TERM_MONTHLY_FEE)
-            bill.add_free_minutes(TERM_MINS)
         self.bill = bill
         self.cur_month = month
         self.cur_year = year
 
     def bill_call(self, call: Call) -> None:
         dur = (ceil(call.duration / 60))
-        if self.bill.free_min == 0:
+        if self.bill.free_min < TERM_MINS:
+            if (self.bill.free_min + dur) <= TERM_MINS:
+                self.bill.add_free_minutes(dur)
+            else:
+                while self.bill.free_min != TERM_MINS:
+                    self.bill.add_free_minutes(1)
+                    dur -= 1
+                self.bill.add_billed_minutes(dur)
+        else:
             self.bill.add_billed_minutes(dur)
-        elif (self.bill.free_min - dur) > 0:
-            self.bill.free_min -= dur
-        elif (self.bill.free_min - dur) < 0:
-            while self.bill.free_min > 0:
-                dur -= 1
-                self.bill.free_min -= 1
-            self.bill.add_billed_minutes(dur)
+
+
+
 
     def cancel_contract(self) -> float:
         self.start = None
@@ -173,8 +174,7 @@ class MTMContract(Contract):
     bill: Optional[Bill]
 
     def __init__(self, start: datetime.datetime) -> None:
-        self.start = start
-        self.bill = Bill()
+        Contract.__init__(self, start)
 
     def new_month(self, month: int, year: int, bill: Bill) -> None:
         bill.set_rates('MTM', MTM_MINS_COST)
@@ -211,24 +211,15 @@ class PrepaidContract(Contract):
     balance: float
 
     def __init__(self, start: datetime.datetime, balance: float) -> None:
-        self.start = start
+        Contract.__init__(self, start)
         self.balance = -balance
-        self.bill = Bill()
-
-
-    def add_to_balance(self, amount: float) -> None:
-        """
-        used to add balance to a prepaid contract
-        """
-        self.balance -= amount
-        self.bill.add_fixed_cost(-amount)
 
 
     def new_month(self, month: int, year: int, bill: Bill) -> None:
         bill.set_rates('PREPAID', PREPAID_MINS_COST)
         if self.balance > -10:
-            amount_to_add = -25 - self.balance
-            self.add_to_balance(amount_to_add)
+            self.balance -= 25
+            bill.add_fixed_cost(-25)
         else:
             bill.add_fixed_cost(self.balance)
         self.bill = bill
@@ -244,7 +235,7 @@ class PrepaidContract(Contract):
         if self.balance > 0:
             return self.balance
         else:
-            return None
+            return 0
 
 
 
