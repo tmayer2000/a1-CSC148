@@ -119,7 +119,9 @@ class CustomerFilter(Filter):
             filtered = data
         else:
             filtered.extend(plan.get_history()[0])
-            filtered.extend(plan.get_history()[1])
+            for call in plan.get_history()[1]:
+                if call.dst_number not in plan.get_phone_numbers():
+                    filtered.append(call)
         return filtered
 
     def __str__(self) -> str:
@@ -231,10 +233,10 @@ class LocationFilter(Filter):
             return data
         for call in data:
             if (coords[0][0] <= call.src_loc[0] <= coords[0][1] and
-                    coords[1][0] <= call.src_loc[1] <= coords[1][0]):
+                    coords[1][0] <= call.src_loc[1] <= coords[1][1]):
                 filtered.append(call)
             elif (coords[0][0] <= call.dst_loc[0] <= coords[0][1] and
-                  coords[1][0] <= call.dst_loc[1] <= coords[1][0]):
+                  coords[1][0] <= call.dst_loc[1] <= coords[1][1]):
                 filtered.append(call)
         return filtered
 
