@@ -30,7 +30,6 @@ def import_data() -> Dict[str, List[Dict]]:
     """
     log = {}
     with open("dataset.json") as o:
-
         log = json.load(o)
     return log
 
@@ -132,8 +131,10 @@ def process_event_history(log: Dict[str, List[Dict]],
                                           customer_list)
             dst = find_customer_by_number(event_data['dst_number'],
                                           customer_list)
+
             src.make_call(new_call)
             dst.receive_call(new_call)
+
 
 
 
@@ -148,6 +149,7 @@ if __name__ == '__main__':
     input_dictionary = import_data()
     customers = create_customers(input_dictionary)
     process_event_history(input_dictionary, customers)
+
 
     # ----------------------------------------------------------------------
     # NOTE: You do not need to understand any of the implementation below,
@@ -164,6 +166,7 @@ if __name__ == '__main__':
         all_calls.extend(hist[0])
     print("\n-----------------------------------------")
     print("Total Calls in the dataset:", len(all_calls))
+
 
     # Main loop for the application.
     # 1) Wait for user interaction with the system and processes everything
