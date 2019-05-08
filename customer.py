@@ -53,10 +53,15 @@ class Customer:
         """
         number = call.src_number
         loc = 0
-        while number != self._phone_lines[loc].number:
+        for loc in range(len(self._phone_lines)):
+            if number == self._phone_lines[loc].number:
+                self._phone_lines[loc].make_call(call)
+                break
             loc += 1
-        phoneline = self._phone_lines[loc]
-        phoneline.make_call(call)
+        # while number != self._phone_lines[loc].number:
+        #     loc += 1
+        # self._phone_lines[loc].make_call(call)
+
 
     def receive_call(self, call: Call) -> None:
         """ Record that a call was made to the destination phone number of
@@ -67,10 +72,15 @@ class Customer:
         """
         number = call.dst_number
         loc = 0
-        while number != self._phone_lines[loc].number:
+        for loc in range(len(self._phone_lines)):
+            if number == self._phone_lines[loc].number:
+                self._phone_lines[loc].receive_call(call)
+                break
             loc += 1
-        phoneline = self._phone_lines[loc]
-        phoneline.receive_call(call)
+        # while number != self._phone_lines[loc].number:
+        #     loc += 1
+        # self._phone_lines[loc].receive_call(call)
+
 
     def cancel_phone_line(self, number: str) -> Union[float, None]:
         """ Remove PhoneLine with number <number> from this customer and return
